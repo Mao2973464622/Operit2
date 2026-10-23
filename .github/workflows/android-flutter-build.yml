@@ -163,7 +163,6 @@ jobs:
             "RELEASE_KEY_ALIAS=$alias",
             "RELEASE_KEY_PASSWORD=$keyPass"
           ) | Set-Content -Path (Join-Path $secretsDir "android-signing.properties") -Encoding utf8
-
       - name: Prepare repository Python venv
         shell: pwsh
         run: |
@@ -173,7 +172,7 @@ jobs:
             throw ".venv\Scripts\python.exe was not created for Flutter native asset hooks"
           }
           .venv\Scripts\python.exe --version
-- name: Prepare plugin build toolchain
+      - name: Prepare plugin build toolchain
         shell: pwsh
         run: |
           npm install --prefix .ci-tools/typescript --no-audit --no-fund typescript@5.9.3
