@@ -173,6 +173,21 @@ jobs:
             throw ".venv\Scripts\python.exe was not created for Flutter native asset hooks"
           }
           .venv\Scripts\python.exe --version
+- name: Prepare plugin build toolchain
+        shell: pwsh
+        run: |
+          npm install --prefix .ci-tools/typescript --no-audit --no-fund typescript@5.9.3
+          if (-not (Test-Path -LiteralPath ".ci-tools\typescript\node_modules\.bin\tsc.cmd")) {
+            throw "repository-managed tsc.cmd was not installed for the plugin sync hook"
+          }
+          .ci-tools\typescript\node_modules\.bin\tsc.cmd --version
+          corepack enable pnpm
+          Push-Location plugins/packages/buildin/workflow
+          try {
+            corepack pnpm install --frozen-lockfile
+          } finally {
+            Pop-Location
+          }
       - name: Check build environment
         shell: pwsh
         run: python tools/build_scripts/check_build_environment.py --products app --github-runner
