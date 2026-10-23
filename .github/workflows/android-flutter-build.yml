@@ -68,7 +68,7 @@ jobs:
   build-android:
     needs: build-android-runtime
     runs-on: windows-2025
-    timeout-minutes: 90
+    timeout-minutes: 120
     env:
       RUSTFLAGS: -Awarnings
       RUST_TOOLCHAIN_VERSION: 1.95.0
@@ -138,8 +138,7 @@ jobs:
         run: |
           $secretsDir = "tools/release/secrets"
           New-Item -ItemType Directory -Force -Path $secretsDir | Out-Null
-          $storePass = "operit2-store-pass"
-          $keyPass = "operit2-key-pass"
+          $password = "operit2-build-password"
           $alias = "operit2-release"
           $keystore = Join-Path $secretsDir "operit2-release.keystore"
           if (Test-Path -LiteralPath $keystore) { Remove-Item -LiteralPath $keystore -Force }
@@ -151,18 +150,19 @@ jobs:
             -keyalg RSA `
             -keysize 2048 `
             -validity 10000 `
-            -storepass $storePass `
-            -keypass $keyPass `
+            -storepass $password `
+            -keypass $password `
             -dname $dn
           if (-not (Test-Path -LiteralPath $keystore)) {
             throw "keytool failed to create keystore at $keystore"
           }
+          & keytool -list -v -keystore $keystore -storepass $password -alias $alias
           @(
             "RELEASE_STORE_FILE=operit2-release.keystore",
-            "RELEASE_STORE_PASSWORD=$storePass",
+            "RELEASE_STORE_PASSWORD=$password",
             "RELEASE_KEY_ALIAS=$alias",
-            "RELEASE_KEY_PASSWORD=$keyPass"
-          ) | Set-Content -Path (Join-Path $secretsDir "android-signing.properties") -Encoding utf8
+            "RELEASE_KEY_PASSWORD=$password"
+          ) | Set-Content -Path (Join-Path $secretsDir "android-signing.properties") -Encoding ascii
       - name: Prepare repository Python venv
         shell: pwsh
         run: |
