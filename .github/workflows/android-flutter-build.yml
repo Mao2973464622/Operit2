@@ -164,6 +164,15 @@ jobs:
             "RELEASE_KEY_PASSWORD=$keyPass"
           ) | Set-Content -Path (Join-Path $secretsDir "android-signing.properties") -Encoding utf8
 
+      - name: Prepare repository Python venv
+        shell: pwsh
+        run: |
+          python --version
+          python -m venv --without-pip .venv
+          if (-not (Test-Path -LiteralPath ".venv\Scripts\python.exe")) {
+            throw ".venv\Scripts\python.exe was not created for Flutter native asset hooks"
+          }
+          .venv\Scripts\python.exe --version
       - name: Check build environment
         shell: pwsh
         run: python tools/build_scripts/check_build_environment.py --products app --github-runner
